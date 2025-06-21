@@ -1,4 +1,4 @@
-pytest==7.4.0
-pytest-qt==4.2.0
-PySide6==6.7.0
-requests-unixsocket==0.3.0
+pytest
+pytest-qt
+PySide6
+requests-unixsocket

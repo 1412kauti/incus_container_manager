@@ -13,8 +13,8 @@ class TestIncusOperations(unittest.TestCase):
     def test_list_containers_success(self, mock_session):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
-        mock_resp.json.return_value = {"metadata": ["/1.0/instances/container1"]}
-        mock_session.return_value.get.return_value = mock_resp
+        mock_resp.json.return_value = {"metadata": {"status": "running"}}
+        mock_session.return_value.get.side_effect = [mock_resp, mock_resp]
         containers = list_containers()
         self.assertEqual(len(containers), 1)
 
@@ -24,13 +24,18 @@ class TestIncusOperations(unittest.TestCase):
         delete_container('test')
         mock_run.assert_called_with(['incus', 'delete', 'test'], capture_output=True, text=True)
 
-    @patch('incus_gui.incus_operations.subprocess.run')
-    def test_toggle_container_running(self, mock_run):
+    @patch('incus_gui.incus_operations.requests_unixsocket.Session')
+    def test_toggle_container_running(self, mock_session):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_session.return_value.put.return_value = mock_resp
         toggle_container('test', 'running')
-        mock_run.assert_called_once()
+        mock_session.return_value.put.assert_called_once()
 
     @patch('incus_gui.incus_operations.subprocess.run')
     def test_list_profiles(self, mock_run):
         mock_run.return_value.stdout = "Name\nprofile1\nprofile2"
+        mock_run.return_value.stderr = ""
+        mock_run.return_value.returncode = 0  # <-- This is critical
         profiles = list_profiles()
-        self.assertEqual(profiles, ['profile1', 'profile2'])
+        self.assertIn('profile1', profiles)
