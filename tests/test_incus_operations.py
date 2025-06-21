@@ -33,9 +33,9 @@ class TestIncusOperations(unittest.TestCase):
         mock_session.return_value.put.assert_called_once()
 
     @patch('incus_gui.incus_operations.subprocess.run')
-    def test_list_profiles(self, mock_run):
+    def test_list_profiles(mock_run, app):
         mock_run.return_value.stdout = "Name\nprofile1\nprofile2"
         mock_run.return_value.stderr = ""
-        mock_run.return_value.returncode = 0  # <-- This is critical
+        mock_run.return_value.returncode = 0
         profiles = list_profiles()
         self.assertIn('profile1', profiles)

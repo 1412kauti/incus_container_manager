@@ -5,7 +5,7 @@ from incus_gui.install_wizard import InstallWizard
 @pytest.fixture
 def wizard(qtbot):
     """Create and return the installation wizard"""
-    wiz = InstallWizard(["ubuntu/24.04"], ["gui"])
+    wiz = InstallWizard(["ubuntu/24.04"]) 
     qtbot.addWidget(wiz)
     return wiz
 
