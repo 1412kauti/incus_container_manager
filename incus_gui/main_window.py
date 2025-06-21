@@ -10,8 +10,8 @@ from PySide6.QtWidgets import (
     QPushButton, QLabel, QHBoxLayout, QApplication, QDialog, QMessageBox
 )
 from PySide6.QtCore import QTimer
-from launch_dialog import LaunchContainerDialog
-from incus_operations import list_containers, toggle_container, restart_container, launch_container, list_profiles, delete_container
+from incus_gui.launch_dialog import LaunchContainerDialog
+from incus_gui.incus_operations import list_containers, toggle_container, restart_container, launch_container, list_profiles, delete_container
 
 class IncusGui(QMainWindow):
     """Main window for the Incus Container Manager GUI.

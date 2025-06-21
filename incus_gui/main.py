@@ -6,9 +6,9 @@ is already present), it starts the main GUI window.
 """
 
 import sys
-from incus_operations import is_incus_installed, get_available_incus_versions, generate_preseed_file, install_incus
-from install_wizard import InstallWizard
-from main_window import IncusGui
+from incus_gui.incus_operations import is_incus_installed, get_available_incus_versions, generate_preseed_file, install_incus
+from incus_gui.install_wizard import InstallWizard
+from incus_gui.main_window import IncusGui
 from PySide6.QtWidgets import QApplication, QMessageBox, QDialog
 
 app = QApplication(sys.argv)

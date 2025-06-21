@@ -11,7 +11,7 @@ import subprocess
 import shutil
 import platform
 import os
-from PySide6.QtWidgets import QMessageBox  # <-- Fix to: QMessageBox
+from PySide6.QtWidgets import QMessageBox 
 
 SOCKET_PATH = "/var/lib/incus/unix.socket"
 BASE_URL = f"http+unix://%2Fvar%2Flib%2Fincus%2Funix.socket/1.0"
