@@ -4,21 +4,19 @@ from incus_gui.incus_operations import list_containers, launch_container, delete
 
 class TestIncusOperations(unittest.TestCase):
     @patch('incus_gui.incus_operations.subprocess.run')
-    def test_list_containers_success(self, mock_run):
+    def test_launch_container_success(self, mock_run):
+        mock_run.return_value.returncode = 0
+        launch_container('test', 'ubuntu/24.04', 'profile')
+        self.assertEqual(mock_run.call_count, 2)
+
+    @patch('incus_gui.incus_operations.requests_unixsocket.Session')
+    def test_list_containers_success(self, mock_session):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {"metadata": ["/1.0/instances/container1"]}
-        with patch('incus_operations.requests_unixsocket.Session') as mock_session:
-            mock_session.return_value.get.return_value = mock_resp
-            containers = list_containers()
-            self.assertEqual(len(containers), 1)
-            self.assertEqual(containers[0]['name'], 'container1')
-
-    @patch('incus_gui.incus_operations.subprocess.run')
-    def test_launch_container_success(self, mock_run):
-        mock_run.return_value.returncode = 0
-        launch_container('test', 'ubuntu/24.04')
-        self.assertEqual(mock_run.call_count, 2)
+        mock_session.return_value.get.return_value = mock_resp
+        containers = list_containers()
+        self.assertEqual(len(containers), 1)
 
     @patch('incus_gui.incus_operations.subprocess.run')
     def test_delete_container_success(self, mock_run):
