@@ -19,7 +19,7 @@ def test_valid_launch(wizard, qtbot):
     """Test valid launch submission"""
     # Set required fields
     wizard.name_edit.setText("test-container")
-    wizard.network_line.setText("lxdbr0")
+    wizard.network_line.setText("incusbr0")
     wizard.storage_line.setText("default")
     
     # Capture accepted signal

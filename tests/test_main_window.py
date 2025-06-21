@@ -16,14 +16,14 @@ def test_initial_state(app):
     assert app.windowTitle() == "Incus Container Manager (Qt 6)"
     assert app.container_list.count() == 0  # Starts empty
 
-@patch('main_window.list_containers')
+@patch('incus_gui.main_window.list_containers')
 def test_refresh_containers(mock_list, app, qtbot):
     """Test container list refresh"""
     mock_list.return_value = [{"name": "test", "status": "running"}]
     qtbot.mouseClick(app.refresh_btn, Qt.LeftButton)
     assert app.container_list.count() == 1
 
-@patch('main_window.launch_container')
+@patch('incus_gui.main_window.launch_container')
 def test_launch_container_dialog(mock_launch, app, qtbot):
     """Test container launch workflow"""
     # Open launch dialog
