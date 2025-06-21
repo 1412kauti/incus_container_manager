@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from PySide6.QtCore import Qt
 from incus_gui.main_window import IncusGui
 from incus_gui.incus_operations import list_containers
