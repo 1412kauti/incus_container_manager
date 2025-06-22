@@ -12,6 +12,11 @@ A modern GUI for managing Incus containers, with a user-friendly interface and r
 - **Clean, modular code structure**
 
 ## Installation
+### Ubuntu Fixes
+```
+sudo apt update
+sudo apt install libxcb-cursor0 libxcb-cursor-dev -y
+```
 
 ### Clone the repository
 ```
