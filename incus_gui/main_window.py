@@ -6,8 +6,8 @@ as well as launching new containers and handling user interactions.
 """
 
 from PySide6.QtWidgets import (
-    QMainWindow, QVBoxLayout, QWidget, QListWidget, QListWidgetItem,  # <-- Fix to: QMainWindow
-    QPushButton, QLabel, QHBoxLayout, QApplication, QDialog, QMessageBox
+    QMainWindow, QVBoxLayout, QWidget, QListWidget, QListWidgetItem,
+    QPushButton, QLabel, QHBoxLayout, QMessageBox, QDialog
 )
 from PySide6.QtCore import QTimer
 from incus_gui.launch_dialog import LaunchContainerDialog
@@ -19,14 +19,6 @@ class IncusGui(QMainWindow):
     Provides a user interface for managing Incus containers, including listing,
     starting, stopping, restarting, and deleting containers, as well as launching
     new containers and managing profiles.
-
-    Attributes:
-        toggling_container (str|None): Name of the container currently being toggled.
-        restarting_container (str|None): Name of the container currently being restarted.
-        container_list (QListWidget): List widget displaying containers.
-        refresh_btn (QPushButton): Button to refresh the container list.
-        launch_btn (QPushButton): Button to launch a new container.  # <-- Fix to: QPushButton
-        timer (QTimer): Timer for auto-refreshing the container list.
     """
 
     def __init__(self):
@@ -39,7 +31,6 @@ class IncusGui(QMainWindow):
 
         central = QWidget()
         self.setCentralWidget(central)
-
         main_layout = QVBoxLayout(central)
 
         # Top layout for buttons
@@ -82,11 +73,8 @@ class IncusGui(QMainWindow):
             print(f"Exception in refresh_containers: {ex}")
             self.container_list.addItem(f"Exception: {str(ex)}")
 
-    def add_container_item(self, container_name, status):  # <-- Fix to: add_container_item
+    def add_container_item(self, container_name, status):
         """Add a container item widget to the list.
-
-        Creates a custom widget for each container, including name, status indicator,
-        and action buttons (start/stop, restart, delete).
 
         Args:
             container_name (str): Name of the container.
@@ -131,7 +119,6 @@ class IncusGui(QMainWindow):
         )
         item_layout.addWidget(restart_btn)
 
-        # Add delete button
         delete_btn = QPushButton("Delete")
         delete_btn.setEnabled(self.toggling_container != container_name and self.restarting_container != container_name)
         delete_btn.clicked.connect(
@@ -154,8 +141,6 @@ class IncusGui(QMainWindow):
         try:
             self.toggling_container = container_name
             self.refresh_containers()
-            QApplication.processEvents()
-
             toggle_container(container_name, current_status)
         except Exception as e:
             print(f"Exception during toggle of {container_name}: {e}")
@@ -172,47 +157,12 @@ class IncusGui(QMainWindow):
         try:
             self.restarting_container = container_name
             self.refresh_containers()
-            QApplication.processEvents()
-
             restart_container(container_name)
         except Exception as e:
             print(f"Exception during restart of {container_name}: {e}")
         finally:
             self.restarting_container = None
             self.refresh_containers()
-
-    def show_launch_dialog(self):
-        """Show the dialog for launching a new container.
-
-        Opens a dialog for the user to specify container name, image, and profile,
-        and initiates the launch process.
-        """
-        # Example lists (replace with actual data from your system)
-        images = ["images:ubuntu/24.04", "images:ubuntu/22.04", "images:alpine/edge"]
-        profiles = list_profiles()  # Excludes 'default'
-
-        dialog = LaunchContainerDialog(images, profiles, self)
-        if dialog.exec() == QDialog.Accepted:
-            try:
-                launch_container(
-                    dialog.container_name,
-                    dialog.selected_image,
-                    dialog.selected_profile
-                )
-                self.refresh_containers()
-            except Exception as e:
-                print(f"Failed to launch container: {e}")
-                QMessageBox.warning(self, "Error", f"Failed to launch container: {e}")
-
-    def delete_container(self, container_name):
-        """Delete a container.
-
-        Args:
-            container_name (str): Name of the container to delete.
-        """
-        from incus_operations import delete_container
-        delete_container(container_name)
-        self.refresh_containers()
 
     def confirm_delete_container(self, container_name, current_status):
         """Confirm and handle container deletion, with optional stop if running.
@@ -221,7 +171,6 @@ class IncusGui(QMainWindow):
             container_name (str): Name of the container to delete.
             current_status (str): Current status of the container.
         """
-        # If container is running, ask if user wants to stop it first
         if current_status.lower() == "running":
             reply = QMessageBox.question(
                 self,
@@ -231,16 +180,13 @@ class IncusGui(QMainWindow):
                 QMessageBox.Cancel
             )
             if reply == QMessageBox.Cancel:
-                return  # User canceled
+                return
             elif reply == QMessageBox.Yes:
                 try:
-                    toggle_container(container_name, "running")  # Stop the container
+                    toggle_container(container_name, "running")
                 except Exception as e:
                     QMessageBox.warning(self, "Error", f"Failed to stop container: {e}")
                     return
-            # If No, proceed to delete (may fail if container is still running)
-
-        # Ask for confirmation to delete
         reply = QMessageBox.question(
             self,
             "Delete Container",
@@ -254,3 +200,24 @@ class IncusGui(QMainWindow):
                 self.refresh_containers()
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"Failed to delete container: {e}")
+
+    def show_launch_dialog(self):
+        """Show the dialog for launching a new container.
+
+        Opens a dialog for the user to specify container name, image, and profile,
+        and initiates the launch process.
+        """
+        images = ["images:ubuntu/24.04", "images:ubuntu/22.04", "images:alpine/edge"]
+        profiles = list_profiles()  # Excludes 'default'
+        dialog = LaunchContainerDialog(images, profiles, self)
+        if dialog.exec() == QDialog.Accepted:
+            try:
+                launch_container(
+                    dialog.container_name,
+                    dialog.selected_image,
+                    dialog.selected_profile
+                )
+                self.refresh_containers()
+            except Exception as e:
+                print(f"Failed to launch container: {e}")
+                QMessageBox.warning(self, "Error", f"Failed to launch container: {e}")

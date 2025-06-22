@@ -11,9 +11,6 @@ from PySide6.QtWidgets import (
 class LaunchContainerDialog(QDialog):
     """Dialog for launching new Incus containers.
 
-    Allows users to specify container name, image, and profile, and validates input before
-    accepting the dialog.
-
     Args:
         images (list): List of available container images.
         profiles (list): List of available profiles (excluding 'default').

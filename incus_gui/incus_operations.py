@@ -11,20 +11,40 @@ import subprocess
 import shutil
 import platform
 import os
+from pathlib import Path
 from PySide6.QtWidgets import QMessageBox 
 
 SOCKET_PATH = "/var/lib/incus/unix.socket"
 BASE_URL = f"http+unix://%2Fvar%2Flib%2Fincus%2Funix.socket/1.0"
 
 
+def write_key_and_move():
+    home_dir = str(Path.home())
+    temp_key_path = os.path.join(home_dir, 'zabbly.asc')  # <-- Fix: home_dir
+    target_dir = '/etc/apt/keyrings'
+    target_key_path = os.path.join(target_dir, 'zabbly.asc')
+
+    # Download the key to the temp location
+    download_cmd = ['wget', '-qO', temp_key_path, 'https://pkgs.zabbly.com/key.asc']
+    subprocess.run(download_cmd, check=True)
+
+    # Move the key to the target directory with sudo
+    move_cmd = ['sudo', 'mv', temp_key_path, target_key_path]
+    subprocess.run(move_cmd, check=True)
+
+    # Set correct permissions on the key file
+    chmod_cmd = ['sudo', 'chmod', '644', target_key_path]
+    subprocess.run(chmod_cmd, check=True)
+
+    print(f'Key downloaded to {temp_key_path} and moved to {target_key_path} with sudo.')  # <-- Fix: print
+    print(f'Key downloaded to {temp_key_path} and moved to {target_key_path} with sudo.')
+
+
 def list_containers():
     """List all containers and their statuses.
 
-    Queries the Incus API to retrieve a list of all containers and their current status.
-
     Returns:
         list[dict]: A list of dictionaries, each containing 'name' and 'status' of a container.
-
     Raises:
         Exception: If the API request fails.
     """
@@ -42,7 +62,7 @@ def list_containers():
             if state_resp.status_code == 200:
                 state_data = state_resp.json()
                 status = state_data.get("metadata", {}).get("status", "unknown")
-            containers.append({"name": container_name, "status": status})
+            containers.append({"name": container_name, "status": status})  # <-- Fix: container_name
         return containers
     else:
         raise Exception(f"Failed to fetch containers: {resp.status_code} - {resp.text}")
@@ -171,19 +191,12 @@ def is_incus_installed():
 
 
 def get_available_incus_versions():
-    """Get available Incus versions for the current system.
-
-    Checks both apt and snap package managers for available versions.
-
-    Returns:
-        list: List of available Incus versions.
-    """
     try:
         # Try apt (Debian/Ubuntu)
         result = subprocess.run(['apt-cache', 'madison', 'incus'], capture_output=True, text=True)
         lines = result.stdout.strip().split('\n')
         if lines and lines[0]:
-            return [line.split('|')[1].strip() for line in lines if line] 
+            return [line.split('|')[1].strip() for line in lines if line]
         # Try snap
         result = subprocess.run(['snap', 'find', 'incus'], capture_output=True, text=True)
         lines = result.stdout.strip().split('\n')
@@ -191,7 +204,7 @@ def get_available_incus_versions():
             return [line.split()[0] for line in lines[1:] if line]
     except Exception:
         pass
-    return []
+    return ["incus"]  # Fallback
 
 
 def generate_preseed_file(settings, filename="incus-preseed.yaml"):
@@ -281,7 +294,8 @@ def install_incus(settings):
                 # Use Zabbly repository for daily/stable/lts (if user wants)
                 repo_url = f"https://pkgs.zabbly.com/incus/{channel}"
                 os.makedirs("/etc/apt/keyrings", exist_ok=True)
-                subprocess.run(["wget", "-qO", "-", "https://pkgs.zabbly.com/key.asc"], check=True, stdout=open("/etc/apt/keyrings/zabbly.asc", "wb"))
+                #subprocess.run(["wget", "-qO", "-", "https://pkgs.zabbly.com/key.asc"], check=True, stdout=open("/etc/apt/keyrings/zabbly.asc", "wb"))
+                write_key_and_move()
                 sources_file = f"/etc/apt/sources.list.d/zabbly-incus-{channel}.sources"
                 with open(sources_file, "w") as f:
                     f.write(

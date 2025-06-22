@@ -9,29 +9,25 @@ import sys
 from incus_gui.incus_operations import is_incus_installed, get_available_incus_versions, generate_preseed_file, install_incus
 from incus_gui.install_wizard import InstallWizard
 from incus_gui.main_window import IncusGui
-from PySide6.QtWidgets import QApplication, QMessageBox, QDialog
+from PySide6.QtWidgets import QApplication, QMessageBox, QDialog  # <-- Fix: QMessageBox
 
 app = QApplication(sys.argv)
 
 if not is_incus_installed():
-    # If Incus is not installed, check for available versions
     versions = get_available_incus_versions()
-    if not versions:
-        QMessageBox.critical(None, "Error", "No Incus package found for your distro.")
-        sys.exit(1)
-    # Launch the installation wizard
-    wizard = InstallWizard(versions)
+    # Always launch the wizard, even if no versions are found
+    wizard = InstallWizard(versions or ["images:ubuntu/24.04"])  # Fallback to a default image
     if wizard.exec() == QDialog.Accepted:
-        # Generate preseed file and install Incus
+        # Proceed with installation
+        settings = wizard.get_preseed_settings()
         preseed_file = generate_preseed_file(wizard.get_preseed_settings())
-        if not install_incus(wizard.get_preseed_settings()["version"], preseed_file):
+        settings["preseed_file"] = preseed_file 
+        if not install_incus(settings):
             QMessageBox.critical(None, "Error", "Failed to install Incus. Check logs.")
             sys.exit(1)
     else:
-        # User canceled the installation
         sys.exit(0)
 
-# Start the main GUI window
 gui = IncusGui()
 gui.show()
 sys.exit(app.exec())
