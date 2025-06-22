@@ -36,7 +36,6 @@ def write_key_and_move():
     chmod_cmd = ['sudo', 'chmod', '644', target_key_path]
     subprocess.run(chmod_cmd, check=True)
 
-    print(f'Key downloaded to {temp_key_path} and moved to {target_key_path} with sudo.')  # <-- Fix: print
     print(f'Key downloaded to {temp_key_path} and moved to {target_key_path} with sudo.')
 
 
@@ -310,12 +309,16 @@ def install_incus(settings):
             # Use Zabbly repository
             repo_url = f"https://pkgs.zabbly.com/incus/{channel}"
             os.makedirs("/etc/apt/keyrings", exist_ok=True)
-            subprocess.run(["wget", "-qO", "-", "https://pkgs.zabbly.com/key.asc"], check=True, stdout=open("/etc/apt/keyrings/zabbly.asc", "wb"))
+            # subprocess.run(["wget", "-qO", "-", "https://pkgs.zabbly.com/key.asc"], check=True, stdout=open("/etc/apt/keyrings/zabbly.asc", "wb"))
+            write_key_and_move()
+            temp_file = f"zabbly-incus-{channel}.sources"
             sources_file = f"/etc/apt/sources.list.d/zabbly-incus-{channel}.sources"
-            with open(sources_file, "w") as f:
+            with open(temp_file, "w") as f:
                 f.write(
                     f"Enabled: yes\nTypes: deb\nURIs: {repo_url}\nSuites: {codename if codename else version}\nComponents: main\nArchitectures: {subprocess.check_output(['dpkg', '--print-architecture']).decode().strip()}\nSigned-By: /etc/apt/keyrings/zabbly.asc\n"
                 )
+            target_dir = '/etc/apt/sources.list.d'
+            subprocess.run(["sudo", "mv", temp_file, target_dir], check=True)
             subprocess.run(["sudo", "apt", "update"], check=True)
             subprocess.run(["sudo", "apt", "install", "-y", "incus"], check=True)
             reboot_required = True

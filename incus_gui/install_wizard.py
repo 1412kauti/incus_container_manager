@@ -40,7 +40,8 @@ class InstallThread(QThread):
             # Step 4: Create storage pool (if not exists)
             self.progress.emit(5, "Creating storage pool...")
             try:
-                subprocess.run(["sudo","incus", "storage", "list"], check=True, capture_output=True)
+                subprocess.run(["sudo","incus", "storage", "create", "default", "dir"], check=True)
+                #subprocess.run(["sudo","incus", "storage", "list"], check=True, capture_output=True)
             except subprocess.CalledProcessError:
                 # If storage list fails, assume no pool exists
                 subprocess.run(["sudo","incus", "storage", "create", "default", "dir"], check=True)
@@ -55,10 +56,10 @@ class InstallThread(QThread):
 
             # Step 6: Update default profile
             self.progress.emit(7, "Updating default profile...")
-            subprocess.run(["sudo","incus", "profile", "device", "remove", "default", "root"], check=True)
-            subprocess.run(["sudo","incus", "profile", "device", "add", "default", "root", "disk", "pool=default", "path=/"], check=True)
-            subprocess.run(["sudo","incus", "profile", "device", "remove", "default", "eth0"], check=True)
-            subprocess.run(["sudo","incus", "profile", "device", "add", "default", "eth0", "nic", "network=incusbr0"], check=True)
+            #subprocess.run(["sudo","incus", "profile", "device", "remove", "default", "root"], check=True)
+            #subprocess.run(["sudo","incus", "profile", "device", "add", "default", "root", "disk", "pool=default", "path=/"], check=True)
+            #subprocess.run(["sudo","incus", "profile", "device", "remove", "default", "eth0"], check=True)
+            #subprocess.run(["sudo","incus", "profile", "device", "add", "default", "eth0", "nic", "network=incusbr0"], check=True)
 
             self.progress.emit(8, "Installation complete. Please reboot.")
             self.finished.emit(True)
